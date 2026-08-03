@@ -1,44 +1,11 @@
-name: Build ZMK Firmware
-
-on: [push, pull_request, workflow_dispatch]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    container:
-      image: zmkfirmware/zmk-build:stable
-    strategy:
-      matrix:
-        include:
-          # 这里我先默认你用的是 nice_nano_v2，如果不是请看下面的【必改项】
-          - board: nice_nano_v2
-            shield: DecaDeca_L
-            artifact_name: firmware-left
-          - board: nice_nano_v2
-            shield: DecaDeca_R
-            artifact_name: firmware-right
-          - board: nice_nano_v2
-            shield: DecaDeca_Split
-            artifact_name: firmware-split
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build ${{ matrix.shield }}
-        run: |
-          echo "开始初始化环境..."
-          west init -l app
-          west update
-          echo "开始编译 ${{ matrix.shield }}..."
-          
-          # 这才是真正干活的编译命令！
-          west build -s app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }}
-          
-          echo "编译完成！"
-
-      - name: Upload Firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: build/zephyr/zmk.uf2
+include:
+  - board: nice_nano_v2
+    shield: DecaDeca_L
+  - board: nice_nano_v2
+    shield: DecaDeca_R
+  - board: nice_nano_v2
+    shield: DecaDeca_Split_left
+  - board: nice_nano_v2
+    shield: DecaDeca_Split_right
+  - board: nice_nano_v2
+    shield: settings_reset
