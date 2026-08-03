@@ -1,16 +1,38 @@
-include:
-  - project: "zmkfirmware/zmk"
-    file: "build.yaml"
+name: Build ZMK Firmware
 
+on: [push, pull_request]
 
-boards/shields:
-  - board: nice_nano_v2
-    shield: DecaDeca_L
-  - board: nice_nano_v2
-    shield: DecaDeca_R
-  - board: nice_nano_v2
-    shield: DecaDeca_Split_Left
-  - board: nice_nano_v2
-    shield: DecaDeca_Split_Right
-  - board: nice_nano_v2
-    shield: settings_reset
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: zmkfirmware/zmk-build:stable
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # 编译左手 (DecaDeca_L)
+    - name: Build Left
+      run: |
+        echo "Building Left..."
+        west build -s app -b nice_nano_v2 -- -DSHIELD=DecaDeca_L
+
+    # 上传左手固件
+    - name: Archive Left
+      uses: actions/upload-artifact@v4
+      with:
+        name: firmware-left
+        path: build/zephyr/zmk.uf2
+
+    # 编译右手 (DecaDeca_R)
+    - name: Build Right
+      run: |
+        echo "Building Right..."
+        west build -s app -b nice_nano_v2 -- -DSHIELD=DecaDeca_R
+
+    # 上传右手固件
+    - name: Archive Right
+      uses: actions/upload-artifact@v4
+      with:
+        name: firmware-right
+        path: build/zephyr/zmk.uf2
